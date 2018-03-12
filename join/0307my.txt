@@ -1,0 +1,21 @@
+$_POSTHAsuperな関数なのでissetは書かなくてもエラーが出ることはなくただ空の状態で存在することができる
+一方自身で定義した＄変数は中身が空である場合存在自体がないのでエラーが出るので、まずissetする必要あり？
+
+なので空の情報で$_POSTを送ってもnot empty で
+emptyなのはPOST送信されてない時だけ
+
+
+
+<?php  if (isset($error['email']) && $error['email']=='blank') {
+      echo 'emailが入力されていません'; }
+
+ここに？＞＜？php 入れると無理なのはなぜ？
+
+
+      elseif (isset($error['email']) && $error['email']=='duplicated') {
+      echo 'emailの重複'; } ?>
+
+
+
+
+      素人的には、emptyを使うより一個一個の要素について存在の有無を確認した方が早いと思うんだけど。
