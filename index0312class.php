@@ -7,9 +7,17 @@
   if (!isset($_SESSION['id'])) {
     // ログインしていない時
     // 強制遷移する
-    header('Location: login.php');
+    header('Location: login0309class.php');
     exit;
   }
+
+  if (!isset($error)) {
+    $sql_insert='INSERT INTO `tweets` SET `tweet`=? ,`member_id`=? ,`reply_tweet_id`=-1, `created`=NOW(), `modified`=NOW()';
+    $data_insert=array($_POST['tweet'],$_SESSION['id']);
+    $stmt_insert=$dbh->prepare($sql_insert);
+    $stmt_insert->execute($data_insert);}
+
+
 
   // つぶやくボタンが押された時
   if (!empty($_POST)) {
@@ -161,7 +169,7 @@ echo '</pre>';
             <a href="view.html">
               <?php echo $one_tweet['created']; ?>
             </a>
-            [<a href="#" style="color: #00994C;">編集</a>]
+            [<a href="update0313.php?action=update&id=<?php echo $one_tweet['tweet_id'] ?>" style="color: #00994C;">編集</a>]
             [<a href="#" style="color: #F33;">削除</a>]
           </p>
         </div>

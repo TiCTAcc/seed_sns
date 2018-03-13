@@ -24,7 +24,8 @@ $_SESSION['time']=time();
   $login_member = $login_stmt->fetch(PDO::FETCH_ASSOC);
 
 
- }else{
+ }
+ else{
   header('Location: login0309class.php');
   exit;
 }
@@ -39,7 +40,8 @@ if (!empty($_POST)) {
     $sql_insert='INSERT INTO `tweets` SET `tweet`=? ,`member_id`=? ,`reply_tweet_id`=-1, `created`=NOW(), `modified`=NOW()';
     $data_insert=array($_POST['tweet'],$_SESSION['id']);
     $stmt_insert=$dbh->prepare($sql_insert);
-    $stmt_insert->execute($data_insert);}
+    $stmt_insert->execute($data_insert);
+  }
 
 }
 // (9)0312テーブルの結合
@@ -47,7 +49,7 @@ if (!empty($_POST)) {
 // OUTER JOIN(left join right join)
 // idは被らないように作るのがベスト
 
-$tweet_sql='SELECT * FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` ORDER BY `tweets`.`created` DESC';
+$tweet_sql='SELECT * FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `delete_flag`=0 ORDER BY `tweets`.`created` DESC';
 $tweet_stmt=$dbh->prepare($tweet_sql);
 $tweet_stmt->execute();
 $tweet_list=array();

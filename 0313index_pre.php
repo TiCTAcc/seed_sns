@@ -1,33 +1,23 @@
-<!-- index0307/0307hw/thanks/login0309class/index0309class/logout0312class -->
-
-
-
 <?php
   session_start();
   // DBの接続
   require('dbconnect.php');
 
-  // var_dump($_SESSION);exit;
+  // // ログインチェック
+  // if (!isset($_SESSION['id'])) {
+  //   // ログインしていない時
+  //   // 強制遷移する
+  //   header('Location: login0309class.php');
+  //   exit;
+  // }
 
-  // ログインチェック
-  // 1時間ログインしていない場合、再度ログイン
-  if (isset($_SESSION['id']) && $_SESSION['time'] + 3600 > time()) {
-    // ログインしている
-    // ログイン時間の更新
-    $_SESSION['time'] = time();
+  if (!isset($error)) {
+    $sql_insert='INSERT INTO `tweets` SET `tweet`=? ,`member_id`=? ,`reply_tweet_id`=-1, `created`=NOW(), `modified`=NOW()';
+    $data_insert=array($_POST['tweet'],$_SESSION['id']);
+    $stmt_insert=$dbh->prepare($sql_insert);
+    $stmt_insert->execute($data_insert);}
 
-    // ログインユーザー情報取得
-    $login_sql = 'SELECT * FROM `members` WHERE `member_id`=?';
-    $login_data = array($_SESSION['id']);
-    $login_stmt = $dbh->prepare($login_sql);
-    $login_stmt->execute($login_data);
-    $login_member = $login_stmt->fetch(PDO::FETCH_ASSOC);
 
-  } else {
-    // ログインしていない、または時間切れの場合
-    header('Location: login.php');
-    exit;
-  }
 
   // つぶやくボタンが押された時
   if (!empty($_POST)) {
@@ -53,34 +43,54 @@
     }
   }
 
-  // 一覧用の投稿全件取得
-  // テーブル結合
-  // INNER JOIN と OUTER JOIN(left join と right join)
-  // INNER JOIN = 両方のテーブルに存在するデータのみ取得
-  // OUTER JOIN(left join と right join) = 複数のテーブルがあり、それらを結合する際に優先テーブルを一つ決め、そこにある情報は全て表示しながら、他のテーブルの情報に対になるデータがあれば表示する
-  // 優先テーブルに指定されると、そのテーブルの情報を全て表示される
+  // ログインしているユーザーの情報を取得
+  $login_sql = 'SELECT * FROM `members` WHERE `member_id`=?';
+  $login_data = array($_SESSION['id']);
+  $login_stmt = $dbh->prepare($login_sql);
+  $login_stmt->execute($login_data);
+  $login_member = $login_stmt->fetch(PDO::FETCH_ASSOC);
 
-  $tweet_sql = 'SELECT * FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` ORDER BY `tweets`.`created` DESC';
-  $tweet_stmt = $dbh->prepare($tweet_sql);
-  $tweet_stmt->execute();
 
-  // 空の配列を用意
-  $tweet_list = array(); // データがない時のエラーを防ぐ
+  $tweet_sql='SELECT * FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `delete_flag`=0 ORDER BY `tweets`.`created` DESC';
+$tweet_stmt=$dbh->prepare($tweet_sql);
+$tweet_stmt->execute();
+$tweet_list=array();
+while(true){
+$tweet=$tweet_stmt->fetch(PDO::FETCH_ASSOC);
+if ($tweet == false) {
+  break;}
+   $tweet_list[]=$tweet;}
 
-  // 一覧用の投稿全件取得
-  while (true) {
-    $tweet = $tweet_stmt->fetch(PDO::FETCH_ASSOC);
-    if ($tweet == false) {
-      break;
-    }
-    $tweet_list[] = $tweet;
-  }
 
-  echo '<br>';
-  echo '<br>';
-  echo '<pre>';
-  var_dump($tweet_list);
-  echo '</pre>';
+
+// echo '<pre>';
+// var_dump($tweet_list);
+// echo '</pre>';
+
+  // // 一覧用の投稿全件取得
+  // $tweet_sql = 'SELECT * FROM `tweets` ORDER BY `created` DESC';
+  // $tweet_stmt = $dbh->prepare($tweet_sql);
+  // $tweet_stmt->execute();
+
+  // // 空の配列を用意
+  // $tweet_list = array(); // データがない時のエラーを防ぐ
+
+  // // 一覧用の投稿全件取得
+  // while (true) {
+  //   $tweet = $tweet_stmt->fetch(PDO::FETCH_ASSOC);
+  //   if ($tweet == false) {
+  //     break;
+  //   }
+  //   $tweet_list[] = $tweet;
+  // }
+
+  // echo '<pre>';
+  // var_dump($tweet_list);
+  // echo '</pre>';
+// if ($_GET['action']=='delete' ) {
+
+
+// }
 
 
 ?>
@@ -118,7 +128,7 @@
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
               <ul class="nav navbar-nav navbar-right">
-                <li><a href="logout.php">ログアウト</a></li>
+                <li><a href="logout.html">ログアウト</a></li>
               </ul>
           </div>
           <!-- /.navbar-collapse -->
@@ -151,20 +161,26 @@
         </form>
       </div>
 
+
       <div class="col-md-8 content-margin-top">
-        <?php foreach($tweet_list as $one_tweet) { ?>
+        <?php foreach($tweet_list as $one_tweet) { 
+
+var_dump($one_tweet);
+
+          ?>
         <div class="msg">
-          <img src="picture_path/<?php echo $one_tweet['picture_path']; ?>" width="48" height="48">
+          <img src="" width="48" height="48">
           <p>
-            <?php echo $one_tweet['tweet']; ?><span class="name"> (<?php echo $one_tweet['nick_name']; ?>)</span>
+            <?php echo $one_tweet['tweet']; ?><span class="name"> (Seed kun) </span>
             [<a href="#">Re</a>]
           </p>
           <p class="day">
             <a href="view.html">
-              <?php echo $one_tweet['created']; ?>
+              <?php echo date($one_tweet['modified']); ?>
             </a>
-            [<a href="#" style="color: #00994C;">編集</a>]
-            [<a href="#" style="color: #F33;">削除</a>]
+            <!-- はてな以降はパラメータ -->
+            [<a href="update0313.php?action=update&tweet_id=<?php echo $one_tweet['tweet_id']; ?>" style="color: #00994C;">編集</a>]
+            [<a href="delete0313.php?action=delete&tweet_id=<?php echo $one_tweet['tweet_id']; ?>" style="color: #F33;">削除</a>]
           </p>
         </div>
         <?php } ?>
@@ -177,10 +193,4 @@
     <script src="assets/js/jquery-migrate-1.4.1.js"></script>
     <script src="assets/js/bootstrap.js"></script>
   </body>
-</html>
-
-
-コメントを追加折りたたむ 
-メッセージ入力
-
-@HayatoTakeishi へのメッセージ
+</html>c
