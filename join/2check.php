@@ -1,6 +1,25 @@
 <?php
 
+session_start();
 require('../dbconnect.php');
+
+echo '<br>';echo '<br>';echo '<br>';echo '<br>';
+var_dump($_SESSION);
+
+
+if (!empty($_POST)) {
+$sql='INSERT INTO `members` SET `nick_name`=?,`email`=?,`password`=?,`picture_path`=?';
+$data=array($_SESSION['join']['nick_name'],$_SESSION['join']['email'],sha1($_SESSION['join']['password']),$_SESSION['join']['picture_path'],);
+$stmt=$dbh->prepare($sql);
+$stmt->execute($data);
+
+header('Location: 3thanks.php');
+exit();
+
+}
+
+
+
  ?>
 
 
@@ -19,9 +38,8 @@ require('../dbconnect.php');
     <link href="../assets/css/form.css" rel="stylesheet">
     <link href="../assets/css/timeline.css" rel="stylesheet">
     <link href="../assets/css/main.css" rel="stylesheet">
-    <!--
-      designフォルダ内では2つパスの位置を戻ってからcssにアクセスしていることに注意！
-     -->
+
+
   </head>
   <body>
   <nav class="navbar navbar-default navbar-fixed-top">
@@ -49,11 +67,41 @@ require('../dbconnect.php');
   <div class="container">
     <div class="row">
       <div class="col-md-4 col-md-offset-4 content-margin-top">
-        <div class="well">
-          ご登録ありがとうございます。 <br>
-          下記ボタンよりログインして下さい。
-        </div>
-        <a href="../re_login.php" class="btn btn-default">ログイン</a>
+        <form method="post" action="" class="form-horizontal" role="form">
+          <input type="hidden" name="action" value="submit">
+          <div class="well">ご登録内容をご確認ください。</div>
+            <table class="table table-striped table-condensed">
+              <tbody>
+                <!-- 登録内容を表示 -->
+                <tr>
+                  <td><div class="text-center">ニックネーム</div></td>
+                  <td><div class="text-center">
+<?php echo $_SESSION['join']['nick_name'] ?>
+                 </div></td>
+                </tr>
+                <tr>
+                  <td><div class="text-center">メールアドレス</div></td>
+                  <td><div class="text-center">
+<?php echo $_SESSION['join']['email'] ?>
+                  </div></td>
+                </tr>
+                <tr>
+                  <td><div class="text-center">パスワード</div></td>
+                  <td><div class="text-center">
+<?php echo $_SESSION['join']['password'] ?>
+                  </div></td>
+                </tr>
+                <tr>
+                  <td><div class="text-center">プロフィール画像</div></td>
+                  <td><div class="text-center"><img src="../picture_path/<?php echo $_SESSION['join']['picture_path']; ?>" width="100" height="100"></div></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <a href="1index.php">&laquo;&nbsp;書き直す</a> |
+            <input type="submit" class="btn btn-default" value="会員登録">
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -64,4 +112,3 @@ require('../dbconnect.php');
     <script src="../assets/js/bootstrap.js"></script>
   </body>
 </html>
-

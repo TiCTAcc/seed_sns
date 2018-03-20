@@ -1,67 +1,50 @@
-<!-- 0313index_pre.php/update0313.php -->
-<!-- 0313index_pre.php/delete0313.php -->
-
+<!-- index0307/0307hw/thanks/re_login/0313index_pre/logout0312class/update0313/ re.php-->
 
 
 <?php
-
 session_start();
 require('dbconnect.php');
 
+
+echo '<br>';echo '<br>';echo '<br>';echo '<br>';
 // var_dump($_GET);
+var_dump($_SESSION);
+// 返信する投稿の内容取得
 
+if (!empty($_GET) && $_GET['action']=='re' && isset($_GET['tweet_id']) ) {
 
-if (!empty($_GET) && $_GET['action']=='update') {
-$sql_select='SELECT * FROM `tweets` WHERE `tweet_id`=?';
-$data_select=array($_GET['tweet_id']);
-$stmt_select=$dbh->prepare($sql_select);
-$stmt_select->execute($data_select);
-$update=$stmt_select->fetch(PDO::FETCH_ASSOC);
+  $sql='SELECT `tweets`.*, `members`.`nick_name`, `members`.`picture_path` FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `tweet_id`=?';
+  $data=array($_GET['tweet_id']);
+  $stmt=$dbh->prepare($sql);
+  $stmt->execute($data);
+  $one_tweet=$stmt->fetch(PDO::FETCH_ASSOC);
+
+// var_dump($one_tweet);
+// 返信用に
+  $reply_msg="@".$one_tweet['tweet']."(".$one_tweet['nick_name'].")";
 }
 
-// var_dump($update);
+echo '<br>';echo '<br>';echo '<br>';echo '<br>';
+var_dump($_POST);
+if (!empty($_POST)) {
 
-
-if (!empty($_POST) && isset($_POST)) {
-
-
-
-if ($_POST['tweet']=='') {
- $error['tweet']='内容が入力されていません';
-
-}else{
-$sql_update='UPDATE `tweets` SET `tweet`=? , `modified`=NOW() WHERE `tweet_id`=?';
-$data_update=array($_POST['tweet'],$update['tweet_id']);
-$stmt_update=$dbh->prepare($sql_update);
-$stmt_update->execute($data_update);
-
-header('Location: 0313index_pre.php');
-exit;
+  if ($_POST['tweet']=='') {
+  $error['tweet']='blank';
 }
+
+
+if (!isset($error)) {
+  $sql='INSERT INTO `tweets` SET `tweet`=?,`reply_tweet_id`=?,`member_id`=?';
+  $data=array($_POST['tweet'],$_GET['tweet_id'],$_SESSION['id']);
+  $stmt=$dbh->prepare($sql);
+  $stmt->execute($data);
+
 }
+ }
+
 
 
  ?>
-
-
- <!-- <!DOCTYPE html>
- <html lang="ja">
- <head>
-   <meta charset="UTF-8">
-   <title>update0313.php</title>
- </head>
- <body>
-  <p>編集</p>
-   <div>
-     <form action="" method="POST">
-       <input type="text" name="tweet" value="">
-       <input type="submit" name="" value="更新">
-     </form>
-   </div>
- </body>
- </html> -->
-
-
 
  <!DOCTYPE html>
 <html lang="ja">
@@ -107,15 +90,23 @@ exit;
   <div class="container">
     <div class="row">
       <div class="col-md-6 col-md-offset-3 content-margin-top">
-        <h4>つぶやき編集</h4>
+        <h4>つぶやきに返信しましょう</h4>
         <div class="msg">
-          <form method="POST" action="" class="form-horizontal" role="form">
-            <?php if (!empty($error) && isset($error)) {
-              echo $error['tweet'];
-            } ?>
-             <input type="text" name="tweet">
+          <form method="post" action="" class="form-horizontal" role="form">
+              <!-- つぶやき -->
+              <div class="form-group">
+                <label class="col-sm-4 control-label">つぶやきに返信</label>
+                <div class="col-sm-8">
+                  <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!">
+                     <?php echo $reply_msg; ?> </textarea>
+                     <?php
+                     if (isset($error) && $error['tweet']=='blank') { ?>
+                    <p class="error">'何かつぶやいてください'</p>
+                 <?php } ?>
+                </div>
+              </div>
             <ul class="paging">
-              <input type="submit" class="btn btn-info" value="更新">
+              <input type="submit" class="btn btn-info" value="返信としてつぶやく">
             </ul>
           </form>
         </div>

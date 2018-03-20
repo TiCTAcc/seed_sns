@@ -1,6 +1,7 @@
 
 <!-- index0307/0307hw/thanks/login0309class/index0309class/logout0312class -->
 
+<!-- index0307/0307hw/thanks/re_login/0313index_pre/logout0312class/update0313/ -->
 
 
 <?php
@@ -27,7 +28,7 @@ setcookie('email', '', time()-3000);
 setcookie('password', '', time()-3000);
 
 // (6)ログアウト機能が実装されているかの確認
-header('Location: index0309class.php');
+header('Location: 0313index_pre.php');
 exit;
 // (7)logout->index->loginの流れで
 // indexの

@@ -1,4 +1,4 @@
-<!-- index0307/0307hw/thanks/login0309class/index0309class/logout0312class -->
+<!-- index0307/0307hw/thanks/login0309class/index0312class/logout0312class -->
 
 
 <?php

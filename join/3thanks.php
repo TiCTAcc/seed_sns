@@ -1,8 +1,4 @@
-<?php
-
-require('../dbconnect.php');
- ?>
-
+<?php  ?>
 
 <!DOCTYPE html>
 <html lang="ja">
@@ -53,7 +49,7 @@ require('../dbconnect.php');
           ご登録ありがとうございます。 <br>
           下記ボタンよりログインして下さい。
         </div>
-        <a href="../re_login.php" class="btn btn-default">ログイン</a>
+        <a href="../4login.php" class="btn btn-default">ログイン</a>
       </div>
     </div>
   </div>

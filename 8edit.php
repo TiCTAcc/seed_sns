@@ -1,69 +1,38 @@
-<!-- 0313index_pre.php/update0313.php -->
-<!-- 0313index_pre.php/delete0313.php -->
-
-
-
 <?php
-
 session_start();
 require('dbconnect.php');
 
+
 // var_dump($_GET);
 
-
-if (!empty($_GET) && $_GET['action']=='update') {
-$sql_select='SELECT * FROM `tweets` WHERE `tweet_id`=?';
-$data_select=array($_GET['tweet_id']);
-$stmt_select=$dbh->prepare($sql_select);
-$stmt_select->execute($data_select);
-$update=$stmt_select->fetch(PDO::FETCH_ASSOC);
-}
-
-// var_dump($update);
-
-
 if (!empty($_POST) && isset($_POST)) {
+  if ($_POST['tweet']=='') {
+    $error['tweet']='blank';
+  }else{
+$sql='SELECT * FROM `tweets` WHERE `tweet_id`=?';
+$data=array($_GET['tweet_id']);
+$stmt=$dbh->prepare($sql);
+$stmt->execute($data);
+$delete=$stmt->fetch(PDO::FETCH_ASSOC);
 
-
-
-if ($_POST['tweet']=='') {
- $error['tweet']='内容が入力されていません';
-
-}else{
-$sql_update='UPDATE `tweets` SET `tweet`=? , `modified`=NOW() WHERE `tweet_id`=?';
-$data_update=array($_POST['tweet'],$update['tweet_id']);
+$sql_update='UPDATE `tweets` SET `tweet`=?, `modified`=NOW() WHERE `tweet_id`=?';
+$data_update=array($_POST['tweet'],$delete['tweet_id']);
 $stmt_update=$dbh->prepare($sql_update);
 $stmt_update->execute($data_update);
 
-header('Location: 0313index_pre.php');
+
+header('Location: 5index.php');
 exit;
 }
+
 }
+
+
 
 
  ?>
 
-
- <!-- <!DOCTYPE html>
- <html lang="ja">
- <head>
-   <meta charset="UTF-8">
-   <title>update0313.php</title>
- </head>
- <body>
-  <p>編集</p>
-   <div>
-     <form action="" method="POST">
-       <input type="text" name="tweet" value="">
-       <input type="submit" name="" value="更新">
-     </form>
-   </div>
- </body>
- </html> -->
-
-
-
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
   <head>
     <meta charset="utf-8">
@@ -110,10 +79,11 @@ exit;
         <h4>つぶやき編集</h4>
         <div class="msg">
           <form method="POST" action="" class="form-horizontal" role="form">
-            <?php if (!empty($error) && isset($error)) {
-              echo $error['tweet'];
-            } ?>
-             <input type="text" name="tweet">
+            <?php if (isset($error['tweet'])) {
+            if ($error['tweet']=='blank' ) {  ?>
+              <p class="error">編集をしてください</p>
+          <?php  }} ?>
+             <textarea name="tweet" id="" cols="30" rows="10"></textarea>
             <ul class="paging">
               <input type="submit" class="btn btn-info" value="更新">
             </ul>

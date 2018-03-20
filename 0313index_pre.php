@@ -1,3 +1,6 @@
+<!-- index0307/0307hw/thanks/re_login/0313index_pre/logout0312class/update0313/ re.php-->
+
+
 <?php
   session_start();
   // DBの接続
@@ -11,11 +14,27 @@
   //   exit;
   // }
 
-  if (!isset($error)) {
-    $sql_insert='INSERT INTO `tweets` SET `tweet`=? ,`member_id`=? ,`reply_tweet_id`=-1, `created`=NOW(), `modified`=NOW()';
-    $data_insert=array($_POST['tweet'],$_SESSION['id']);
-    $stmt_insert=$dbh->prepare($sql_insert);
-    $stmt_insert->execute($data_insert);}
+  // if (!isset($error)) {
+  //   $sql_insert='INSERT INTO `tweets` SET `tweet`=? ,`member_id`=? ,`reply_tweet_id`=-1, `created`=NOW(), `modified`=NOW()';
+  //   $data_insert=array($_POST['tweet'],$_SESSION['id']);
+  //   $stmt_insert=$dbh->prepare($sql_insert);
+  //   $stmt_insert->execute($data_insert);}
+
+  if (isset($_SESSION['id']) && $_SESSION['time'] + 3600 > time()) {
+    // ログインしている
+    // ログイン時間の更新
+    $_SESSION['time'] = time();
+    // ログインユーザー情報取得
+    $login_sql = 'SELECT * FROM `members` WHERE `member_id`=?';
+    $login_data = array($_SESSION['id']);
+    $login_stmt = $dbh->prepare($login_sql);
+    $login_stmt->execute($login_data);
+    $login_member = $login_stmt->fetch(PDO::FETCH_ASSOC);
+  } else {
+    // ログインしていない、または時間切れの場合
+    header('Location: re_login.php');
+    exit;
+  }
 
 
 
@@ -43,6 +62,45 @@
     }
   }
 
+
+// ページング機能(1)0314start
+$page='';
+
+if (isset($_GET['page'])) {
+  $page=$_GET['page'];
+}else{
+  $page=1;
+}
+
+// (2)イレギュラーな数値に対応
+$page=max($page,1);
+
+$page_number=5;
+
+
+$page_sql='SELECT COUNT(*) AS `page_count` FROM `tweets`  WHERE `delete_flag`=0';
+$page_stmt=$dbh->prepare($page_sql);
+$page_stmt->execute();
+$page_count=$page_stmt->fetch(PDO::FETCH_ASSOC);
+
+// (3)ceil関数
+$all_page_number=ceil($page_count['page_count']/$page_number);
+
+echo '<br>';echo '<br>';echo '<br>';echo '<br>';
+var_dump($page_count);
+var_dump($all_page_number);
+
+$page=min($page, $all_page_number);
+// 表示するデータの取得開始場所
+$start=($page-1)*$page_number;
+
+
+
+
+
+
+
+
   // ログインしているユーザーの情報を取得
   $login_sql = 'SELECT * FROM `members` WHERE `member_id`=?';
   $login_data = array($_SESSION['id']);
@@ -50,8 +108,9 @@
   $login_stmt->execute($login_data);
   $login_member = $login_stmt->fetch(PDO::FETCH_ASSOC);
 
+// 0314selectいじる（４）
+  $tweet_sql="SELECT `tweets`.*, `members`.`nick_name`, `members`.`picture_path` FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `delete_flag`=0 ORDER BY `tweets`.`modified` DESC LIMIT ".$start.",".$page_number;
 
-  $tweet_sql='SELECT * FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `delete_flag`=0 ORDER BY `tweets`.`created` DESC';
 $tweet_stmt=$dbh->prepare($tweet_sql);
 $tweet_stmt->execute();
 $tweet_list=array();
@@ -63,8 +122,10 @@ if ($tweet == false) {
 
 
 
+// echo '<br>';echo '<br>';echo '<br>';echo '<br>';
 // echo '<pre>';
-// var_dump($tweet_list);
+// var_dump($_SESSION);
+
 // echo '</pre>';
 
   // // 一覧用の投稿全件取得
@@ -128,7 +189,7 @@ if ($tweet == false) {
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
               <ul class="nav navbar-nav navbar-right">
-                <li><a href="logout.html">ログアウト</a></li>
+                <li><a href="logout0312class.php">ログアウト</a></li>
               </ul>
           </div>
           <!-- /.navbar-collapse -->
@@ -154,37 +215,64 @@ if ($tweet == false) {
           <ul class="paging">
             <input type="submit" class="btn btn-info" value="つぶやく">
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <li><a href="index.html" class="btn btn-default">前</a></li>
+                <?php if ($page==1) { ?>
+                <li>前</li>
+                <?php }else{ ?>
+                 <li><a href="0313index_pre.php?page=<?php echo $page-1 ?>" class="btn btn-default">前</a></li>
+                 <?php } ?>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
-                <li><a href="index.html" class="btn btn-default">次</a></li>
+                <?php if ($page==$all_page_number) { ?>
+                 <li>後</li>
+
+               <?php }else{ ?>
+                <li><a href="0313index_pre.php?page=<?php echo $page+1 ?>" class="btn btn-default">次</a></li>
+                <?php } ?>
+                <li><?php echo $page; ?>/<?php echo $all_page_number ?></li>
           </ul>
         </form>
       </div>
 
 
       <div class="col-md-8 content-margin-top">
-        <?php foreach($tweet_list as $one_tweet) { 
+        <?php foreach($tweet_list as $one_tweet) {
 
-var_dump($one_tweet);
+
 
           ?>
         <div class="msg">
-          <img src="" width="48" height="48">
+          <img src="picture_path/<?php echo $one_tweet['picture_path']?>" width="48" height="48">
           <p>
-            <?php echo $one_tweet['tweet']; ?><span class="name"> (Seed kun) </span>
-            [<a href="#">Re</a>]
+            <?php echo $one_tweet['tweet']; ?><span class="name"><br>name:   <?php echo $one_tweet['nick_name']?> </span>
+
+<?php if ($_SESSION['id']!==$one_tweet['member_id']) {
+  ?>
+            [<a href="re.php?action=re&tweet_id=<? echo $one_tweet['tweet_id']?>">Re</a>]
+            <?php } ?>
           </p>
           <p class="day">
-            <a href="view.html">
+            <a href="view0314.php?tweet_id=<?php echo $one_tweet['tweet_id']; ?>">
               <?php echo date($one_tweet['modified']); ?>
             </a>
             <!-- はてな以降はパラメータ -->
+ <?php if ($one_tweet['nick_name']==$login_member['nick_name']) { ?>
+
+
+
+
             [<a href="update0313.php?action=update&tweet_id=<?php echo $one_tweet['tweet_id']; ?>" style="color: #00994C;">編集</a>]
             [<a href="delete0313.php?action=delete&tweet_id=<?php echo $one_tweet['tweet_id']; ?>" style="color: #F33;">削除</a>]
+
+<?php if ($one_tweet['reply_tweet_id']>=1) { ?>
+  
+
+            [<a href="view0314.php?tweet_id=<?php echo $one_tweet['reply_tweet_id']; ?>" style="color: #a9a9a9;">返信元のメッセージを表示</a>] 
+            <?php } ?>
+<?php } ?>
+
           </p>
         </div>
-        <?php } ?>
       </div>
+      <?php } ?>
     </div>
   </div>
 
@@ -193,4 +281,4 @@ var_dump($one_tweet);
     <script src="assets/js/jquery-migrate-1.4.1.js"></script>
     <script src="assets/js/bootstrap.js"></script>
   </body>
-</html>c
+</html>

@@ -1,69 +1,39 @@
-<!-- 0313index_pre.php/update0313.php -->
-<!-- 0313index_pre.php/delete0313.php -->
+<!-- view0314.php/delete0314.php -->
+
+<!-- 0313index_pre.php -->
 
 
+<!-- $tweet_sql='SELECT * FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `delete_flag`=0 ORDER BY `tweets`.`created` DESC'; -->
 
-<?php
-
+<?php 
 session_start();
 require('dbconnect.php');
+echo '<br>';echo '<br>';echo '<br>';echo '<br>';
+var_dump($_GET);
 
-// var_dump($_GET);
 
+echo '<br>';echo '<br>';echo '<br>';echo '<br>';
 
-if (!empty($_GET) && $_GET['action']=='update') {
-$sql_select='SELECT * FROM `tweets` WHERE `tweet_id`=?';
-$data_select=array($_GET['tweet_id']);
-$stmt_select=$dbh->prepare($sql_select);
-$stmt_select->execute($data_select);
-$update=$stmt_select->fetch(PDO::FETCH_ASSOC);
+// var_dump($_SESSION);
+
+if (!empty($_GET)) {
+  $sql='SELECT * FROM `tweets` LEFT JOIN `members` ON `tweets`.`member_id`=`members`.`member_id`WHERE `tweet_id`=?';
+  $data=array($_GET['tweet_id']);
+  $stmt=$dbh->prepare($sql);
+  $stmt->execute($data);
+
+  $tweet_id=$stmt->fetch(PDO::FETCH_ASSOC);
+
+  // var_dump($tweet_id);
 }
 
-// var_dump($update);
-
-
-if (!empty($_POST) && isset($_POST)) {
 
 
 
-if ($_POST['tweet']=='') {
- $error['tweet']='内容が入力されていません';
-
-}else{
-$sql_update='UPDATE `tweets` SET `tweet`=? , `modified`=NOW() WHERE `tweet_id`=?';
-$data_update=array($_POST['tweet'],$update['tweet_id']);
-$stmt_update=$dbh->prepare($sql_update);
-$stmt_update->execute($data_update);
-
-header('Location: 0313index_pre.php');
-exit;
-}
-}
 
 
  ?>
-
-
- <!-- <!DOCTYPE html>
- <html lang="ja">
- <head>
-   <meta charset="UTF-8">
-   <title>update0313.php</title>
- </head>
- <body>
-  <p>編集</p>
-   <div>
-     <form action="" method="POST">
-       <input type="text" name="tweet" value="">
-       <input type="submit" name="" value="更新">
-     </form>
-   </div>
- </body>
- </html> -->
-
-
-
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
   <head>
     <meta charset="utf-8">
@@ -96,7 +66,7 @@ exit;
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
               <ul class="nav navbar-nav navbar-right">
-                <li><a href="logout.php">ログアウト</a></li>
+                <li><a href="logout.html">ログアウト</a></li>
               </ul>
           </div>
           <!-- /.navbar-collapse -->
@@ -106,18 +76,22 @@ exit;
 
   <div class="container">
     <div class="row">
-      <div class="col-md-6 col-md-offset-3 content-margin-top">
-        <h4>つぶやき編集</h4>
+      <div class="col-md-4 col-md-offset-4 content-margin-top">
         <div class="msg">
-          <form method="POST" action="" class="form-horizontal" role="form">
-            <?php if (!empty($error) && isset($error)) {
-              echo $error['tweet'];
-            } ?>
-             <input type="text" name="tweet">
-            <ul class="paging">
-              <input type="submit" class="btn btn-info" value="更新">
-            </ul>
-          </form>
+          <img src="picture_path/<?php echo $tweet_id['picture_path']?>" width="100" height="100">
+          <p>投稿者 : <span class="name">  <?php echo $tweet_id['nick_name']; ?></span></p>
+          <p>
+            つぶやき : <br>
+            <?php echo $tweet_id['tweet']; ?>
+          </p>
+          <p class="day">
+            <?php echo $tweet_id['modified']; ?>
+            <?php if ($tweet_id['member_id']==$_SESSION['id']) {
+              ?>
+           
+            [<a href="delete0314.php?action=delete&tweet_id=<?php echo $_GET['tweet_id'] ?>" style="color: #F33;">削除</a>]
+            <?php } ?>
+          </p>
         </div>
         <a href="0313index_pre.php">&laquo;&nbsp;一覧へ戻る</a>
       </div>
